@@ -58,7 +58,7 @@ def http(request):
         if not email_addresses:
             continue
         # prefer primary email address if there are multiple
-        email_address = sorted(email_addresses, key=lambda x: x.get('is_primary', False))[0]
+        email_address = sorted(email_addresses, key=lambda x: x.get('is_primary', False))[0]['address']
         for tag in added_tags:
             if tag in COMMITTEES_BY_TAG:
                 # send an email to the relevant committee

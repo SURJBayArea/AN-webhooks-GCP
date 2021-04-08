@@ -1,4 +1,8 @@
 import json
+import os
+
+import sendgrid
+from sendgrid.helpers.mail import Mail, Email, To, Content
 
 
 COMMITTEES_BY_TAG = {
@@ -16,9 +20,23 @@ COMMITTEES_BY_TAG = {
 SOURCE_EMAIL = 'support@surjbayarea.org'
 
 
-def send_email(to_addresses, subject, body):
-    # TODO
-    print('SEND EMAIL', to_addresses, subject, body)
+def send_email(to_address, subject, body):
+    print('SEND EMAIL', to_address, subject, body)
+    sg_api_key = os.environ.get('SENDGRID_API_KEY')
+    if not sg_api_key:
+        print('Sendgrid api key not found')
+        return
+
+    sg = sendgrid.SendGridAPIClient(sg_api_key)
+    from_email = Email(SOURCE_EMAIL)
+    to_email = To(to_address)
+    content = Content("text/plain", body)
+    mail = Mail(from_email, to_email, subject, content)
+    mail_json = mail.get()
+    print('sending email')
+    response = sg.client.mail.send.post(request_body=mail_json)
+    print(response.status_code)
+    print(response.headers)
 
 
 def http(request):
@@ -68,6 +86,6 @@ def http(request):
                 if not to_address:
                     print('No contact email address for committee:', tag)
                     continue
-                send_email([to_address], subject, email_body)
+                send_email(to_address, subject, email_body)
 
     return 'All done'

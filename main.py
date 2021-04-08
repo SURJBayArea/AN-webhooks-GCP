@@ -5,6 +5,10 @@ import sendgrid
 from sendgrid.helpers.mail import Mail, Email, To, Content
 
 
+DEBUG = os.environ.get('DEBUG', False)
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+SOURCE_EMAIL = 'support@surjbayarea.org'
+
 COMMITTEES_BY_TAG = {
     # mapping of Action Network tag to email address for each committee
     'Interest_Basebuilding': 'basebuilding_notify@surjbayarea.org',
@@ -17,17 +21,19 @@ COMMITTEES_BY_TAG = {
     'Accessibility_Working_Group': 'accessibility_notify@surjbayarea.org',
 }
 
-SOURCE_EMAIL = 'support@surjbayarea.org'
-
 
 def send_email(to_address, subject, body):
     print('SEND EMAIL', to_address, subject, body)
-    sg_api_key = os.environ.get('SENDGRID_API_KEY')
-    if not sg_api_key:
+    if not SENDGRID_API_KEY:
         print('Sendgrid api key not found')
         return
 
-    sg = sendgrid.SendGridAPIClient(sg_api_key)
+    # in debug mode, only email myself
+    if DEBUG:
+        to_address = 'danajfallon@gmail.com'
+        body = '[TEST] ' + body
+
+    sg = sendgrid.SendGridAPIClient(SENDGRID_API_KEY)
     from_email = Email(SOURCE_EMAIL)
     to_email = To(to_address)
     content = Content("text/plain", body)
